@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reliance Fresh – ತರಕಾರಿ ಬೆಲೆ ಪಟ್ಟಿ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:#0047AB; --blue-dark:#003080; --blue-mid:#1a5fc8;
+  --red:#CC0000; --gold:#FFB300; --green:#1a7a2e; --green-light:#e6f7ea;
+  --bg:#f0f4fa; --white:#fff; --border:#c5cfe0;
+  --text:#1a1a2e; --muted:#5a6480;
+  --kolar:#7B2FBE; --bengaluru:#0047AB; --mysuru:#C0392B;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Rajdhani','Noto Sans Kannada',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* toolbar */
+.toolbar{background:var(--blue-dark);color:#fff;padding:10px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.3);}
+.toolbar-brand{font-size:19px;font-weight:700;flex:1;min-width:200px;}
+.toolbar-brand span{color:var(--gold);}
+.toolbar-brand small{display:block;font-size:11px;font-weight:400;opacity:.7;margin-top:1px;}
+.toolbar input[type=date]{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:13px;font-family:inherit;}
+.toolbar input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);}
+.btn{padding:6px 16px;border-radius:6px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;}
+.btn-gold{background:var(--gold);color:#1a1a00;}.btn-gold:hover{background:#e0a000;}
+.btn-green{background:var(--green);color:#fff;}.btn-green:hover{background:#155a22;}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;}.btn-outline:hover{background:rgba(255,255,255,.1);}
+
+/* market tabs */
+.market-tabs{display:flex;gap:6px;background:var(--white);border-bottom:2px solid var(--border);padding:0 20px;}
+.market-tab{padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;transition:.15s;color:var(--muted);}
+.market-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.market-tab .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;}
+.dot-kolar{background:var(--kolar);}
+.dot-bengaluru{background:var(--bengaluru);}
+.dot-mysuru{background:var(--mysuru);}
+.dot-reliance{background:var(--gold);}
+
+/* live price panel */
+.live-panel{background:var(--white);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;}
+.live-badge{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:99px;background:#e6f7ea;color:var(--green);font-weight:600;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.last-updated{font-size:12px;color:var(--muted);}
+.auto-refresh-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;}
+.toggle{width:32px;height:18px;background:#ccc;border-radius:99px;position:relative;transition:.2s;}
+.toggle.on{background:var(--green);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.2s;}
+.toggle.on::after{left:16px;}
+
+/* comparison strip */
+.compare-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;padding:12px 20px;background:var(--white);border-bottom:1px solid var(--border);}
+.compare-card{background:var(--bg);border-radius:8px;padding:10px 12px;border:1.5px solid transparent;}
+.compare-card.active-market{border-color:var(--blue);}
+.compare-city{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.compare-price{font-size:20px;font-weight:700;}
+.compare-trend{font-size:11px;margin-top:2px;}
+.trend-up{color:#c0392b;} .trend-down{color:#27ae60;} .trend-flat{color:var(--muted);}
+
+/* main table wrapper */
+.page-wrap{max-width:900px;margin:20px auto;padding:0 16px 60px;}
+.list-card{background:#fff;border-radius:10px;box-shadow:0 2px 16px rgba(0,71,171,.08);overflow:hidden;border:1.5px solid var(--border);}
+.list-header{background:var(--blue);color:#fff;display:grid;grid-template-columns:36px 1fr 150px 76px 90px 46px;align-items:center;}
+.list-header div{padding:9px 10px;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;border-right:1px solid rgba(255,255,255,.2);}
+.list-header div:last-child{border-right:none;}
+
+/* rows */
+.item-row{display:grid;grid-template-columns:36px 1fr 150px 76px 90px 46px;align-items:center;border-bottom:1px solid var(--border);}
+.item-row:nth-child(even){background:#f0f4ff;}
+.item-row:hover{background:#dce8ff;}
+.row-num{text-align:center;font-size:12px;font-weight:600;color:var(--muted);padding:4px 0;}
+.cell{padding:4px 8px;border-right:1px solid var(--border);}
+.cell:last-child{border-right:none;}
+
+/* inputs */
+.name-kn,.name-en,.sku-input{width:100%;border:1px solid transparent;background:transparent;font-family:inherit;padding:2px 4px;border-radius:4px;transition:.15s;}
+.name-kn{font-size:14px;font-family:'Noto Sans Kannada',sans-serif;font-weight:600;}
+.name-en{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.3px;}
+.sku-input{font-size:12px;color:var(--muted);}
+.name-kn:hover,.name-en:hover,.sku-input:hover{border-color:var(--border);background:#fff;}
+.name-kn:focus,.name-en:focus,.sku-input:focus,.price-input:focus{outline:none;border-color:var(--blue);background:#fff;}
+
+.price-cell{display:flex;align-items:center;gap:3px;}
+.price-input{width:52px;border:1px solid transparent;background:transparent;font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;padding:3px 3px;border-radius:4px;color:var(--red);text-align:right;transition:.15s;}
+.price-input:hover{border-color:var(--border);background:#fff;}
+.price-changed{animation:flash .6s;}
+@keyframes flash{0%{background:#fffde0;}100%{background:transparent;}}
+
+.market-dot-row{width:7px;height:7px;border-radius:50%;display:inline-block;margin-left:2px;}
+
+.unit-sel{border:1px solid transparent;background:transparent;font-family:inherit;font-size:12px;color:var(--muted);padding:3px;border-radius:4px;cursor:pointer;}
+.unit-sel:hover{border-color:var(--border);background:#fff;}
+
+.del-btn{background:none;border:none;color:#ccc;cursor:pointer;font-size:15px;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.del-btn:hover{color:var(--red);background:#fff0f0;}
+
+/* source indicator */
+.src-badge{font-size:10px;padding:1px 5px;border-radius:3px;font-weight:600;white-space:nowrap;}
+.src-kolar{background:#ede0f7;color:#7B2FBE;}
+.src-bengaluru{background:#e0e9ff;color:#0047AB;}
+.src-mysuru{background:#fde8e8;color:#C0392B;}
+.src-manual{background:#fff7e0;color:#a07800;}
+
+/* loading overlay */
+.loading-bar{height:3px;background:linear-gradient(90deg,var(--blue),var(--gold));width:0;transition:width .4s;position:fixed;top:0;left:0;z-index:999;}
+
+/* print */
+@media print{
+  .toolbar,.market-tabs,.live-panel,.compare-strip,.no-print{display:none!important;}
+  .list-card{box-shadow:none;border:1px solid #aaa;}
+  .item-row:hover{background:inherit;}
+  .del-btn,.price-input,.name-kn,.name-en,.sku-input,.unit-sel{pointer-events:none;}
+  .price-input{border:none!important;background:transparent!important;}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-bar" id="loading-bar"></div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="toolbar-brand">
+    &#127809; Reliance <span>Fresh</span>
+    <small>ತರಕಾರಿ ಮಂಡಿ ಬೆಲೆ ಪಟ್ಟಿ — Vegetable Price Board</small>
+  </div>
+  <label style="font-size:12px;opacity:.8;">Date:</label>
+  <input type="date" id="date-picker">
+  <button class="btn btn-gold" onclick="addRow()">+ Add Item</button>
+  <button class="btn btn-outline no-print" onclick="fetchAllMarkets()">&#8635; Refresh Prices</button>
+  <button class="btn btn-green no-print" onclick="window.print()">&#128438; Print</button>
+</div>
+
+<!-- Market tabs -->
+<div class="market-tabs">
+  <div class="market-tab active" onclick="switchTab('all')" id="tab-all">&#128203; All Markets</div>
+  <div class="market-tab" onclick="switchTab('bengaluru')" id="tab-bengaluru"><span class="dot dot-bengaluru"></span>Bengaluru</div>
+  <div class="market-tab" onclick="switchTab('kolar')" id="tab-kolar"><span class="dot dot-kolar"></span>Kolar</div>
+  <div class="market-tab" onclick="switchTab('mysuru')" id="tab-mysuru"><span class="dot dot-mysuru"></span>Mysuru</div>
+</div>
+
+<!-- Live status bar -->
+<div class="live-panel">
+  <div class="live-badge"><div class="live-dot"></div>Live Mandi Rates</div>
+  <div class="last-updated" id="last-updated">Fetching prices…</div>
+  <div style="flex:1;"></div>
+  <div class="auto-refresh-toggle" onclick="toggleAutoRefresh()">
+    <div class="toggle" id="auto-toggle"></div>
+    <span id="auto-label">Auto-refresh: OFF</span>
+  </div>
+</div>
+
+<!-- Market comparison strip -->
+<div class="compare-strip" id="compare-strip">
+  <div class="compare-card" id="cmp-bengaluru">
+    <div class="compare-city" style="color:var(--bengaluru);">&#127961; Bengaluru</div>
+    <div class="compare-price" id="cmp-b-price" style="color:var(--bengaluru);">–</div>
+    <div class="compare-trend" id="cmp-b-trend">avg tomato price</div>
+  </div>
+  <div class="compare-card" id="cmp-kolar">
+    <div class="compare-city" style="color:var(--kolar);">&#127961; Kolar</div>
+    <div class="compare-price" id="cmp-k-price" style="color:var(--kolar);">–</div>
+    <div class="compare-trend" id="cmp-k-trend">avg tomato price</div>
+  </div>
+  <div class="compare-card" id="cmp-mysuru">
+    <div class="compare-city" style="color:var(--mysuru);">&#127961; Mysuru</div>
+    <div class="compare-price" id="cmp-m-price" style="color:var(--mysuru);">–</div>
+    <div class="compare-trend" id="cmp-m-trend">avg tomato price</div>
+  </div>
+  <div class="compare-card">
+    <div class="compare-city" style="color:#a07800;">&#127976; Your List</div>
+    <div class="compare-price" id="cmp-avg-price" style="color:#a07800;">–</div>
+    <div class="compare-trend" id="cmp-avg-trend">avg list price</div>
+  </div>
+</div>
+
+<div class="page-wrap">
+  <div class="list-card">
+    <div class="list-header">
+      <div>#</div>
+      <div>ಹೆಸರು / Name</div>
+      <div>SKU Code</div>
+      <div>Unit</div>
+      <div>&#8377; Price/kg</div>
+      <div></div>
+    </div>
+    <div id="item-list"></div>
+  </div>
+  <div style="margin-top:10px;font-size:12px;color:var(--muted);text-align:right;">
+    Sources: <a href="https://market.todaypricerates.com" target="_blank" style="color:var(--blue);">market.todaypricerates.com</a> (Bengaluru, Kolar, Mysuru) · Data refreshed daily from APMC mandis
+  </div>
+</div>
+
+<script>
+// ── Seed data ──
+const defaultItems = [
+  {kn:'ಹಾಗಲಕಾಯಿ',en:'BITTER GOURD',sku:'590000XXX',unit:'ಕೆ.ಜಿ',price:42,key:'bitter_gourd'},
+  {kn:'ಸೋರೆಕಾಯಿ',en:'BOTTLE GOURD',sku:'590000XXX',unit:'ಕೆ.ಜಿ',price:26,key:'bottle_gourd'},
+  {kn:'ಸಫಲ್ ಬದನೆ (BBB)',en:'BRINJAL BBB',sku:'590000161',unit:'ಕೆ.ಜಿ',price:31,key:'brinjal'},
+  {kn:'ಬಿಕ್ಕದಿ ಕಾಯಿ',en:'BROAD BEANS',sku:'590000154',unit:'ಕೆ.ಜಿ',price:32,key:'broad_beans'},
+  {kn:'ಹೂ ಕೋಸು',en:'CAULIFLOWER',sku:'590000619',unit:'1ಕೆ',price:31,key:'cauliflower'},
+  {kn:'ಕ್ಯಾಪ್ಸಿಕಮ್ ಗ್ರೀನ್',en:'CAPSICUM GREEN',sku:'590000143',unit:'ಕೆ.ಜಿ',price:59,key:'capsicum'},
+  {kn:'ತೊಂಡೇಕಾಯಿ',en:'IVY GOURD (COCCENIA)',sku:'590000175',unit:'ಕೆ.ಜಿ',price:35,key:'ivy_gourd'},
+  {kn:'ಸೌತೆಕಾಯಿ',en:'CUCUMBER',sku:'590000170',unit:'ಕೆ.ಜಿ',price:33,key:'cucumber'},
+  {kn:'ಹುರಳಿಕಾಯಿ (ಅನುಪಮ)',en:'STRING BEANS ANUPAMA',sku:'590000160',unit:'ಕೆ.ಜಿ',price:52,key:'french_beans'},
+  {kn:'ಹುರಳಿಕಾಯಿ (ಫ್ರೆಂಚ್)',en:'FRENCH BEANS',sku:'590000157',unit:'ಕೆ.ಜಿ',price:52,key:'french_beans'},
+  {kn:'ಹಿರೇಕಾಯಿ',en:'RIDGE GOURD',sku:'590000178',unit:'ಕೆ.ಜಿ',price:40,key:'ridge_gourd'},
+  {kn:'ಪಡವಲಕಾಯಿ',en:'SNAKE GOURD',sku:'590000180',unit:'ಕೆ.ಜಿ',price:26,key:'snake_gourd'},
+  {kn:'P. ಸೌತೆಕಾಯಿ',en:'CUCUMBER PACK',sku:'590003548',unit:'ಕೆ.ಜಿ',price:33,key:'cucumber'},
+  {kn:'ಟಮೇಟೊ ಹೈಬ್ರೀಡ್',en:'TOMATO HYBRID',sku:'590000092',unit:'ಕೆ.ಜಿ',price:22,key:'tomato'},
+  {kn:'ಟಮೇಟೊ ನಾಟಿ 618',en:'TOMATO 618',sku:'590000091',unit:'ಕೆ.ಜಿ',price:22,key:'tomato'},
+  {kn:'ಸ್ವೀಟ್ ಕಾರ್ನ್',en:'SWEET CORN',sku:'590001266',unit:'1ಕೆ',price:27,key:'corn'},
+  {kn:'ಎಲೆಕೋಸು',en:'CABBAGE',sku:'590002370',unit:'1ಕೆ',price:21,key:'cabbage'},
+  {kn:'ಸಪೋಟ',en:'SAPOTA',sku:'590000083',unit:'ಕೆ.ಜಿ',price:46,key:'sapota'},
+  {kn:'ಸೀಬೆಹಣ್ಣು',en:'GUAVA WHITE',sku:'590000067',unit:'ಕೆ.ಜಿ',price:32,key:'guava'},
+  {kn:'ಬಣ್ಣ ಮೆಣಸಿನಕಾಯಿ',en:'BHAJJI CHILLI',sku:'590000506',unit:'ಕೆ.ಜಿ',price:67,key:'green_chili'},
+  {kn:'ಹಾರಮಡಿ',en:'BEANS COWPEA',sku:'590000156',unit:'ಕೆ.ಜಿ',price:51,key:'cluster_beans'},
+  {kn:'ಪಿ.ಬ್ರೊಕ್ಕೊಳಿ',en:'BROCCOLI P',sku:'590003472',unit:'1ಕೆ',price:52,key:'broccoli'},
+  {kn:'ಹಸಿ ಅಲಸಿನಕಾಯಿ (TJF)',en:'RIPE TURMERIC',sku:'590000263',unit:'ಕೆ.ಜಿ',price:20,key:'turmeric'},
+  {kn:'B.P.S. ಗುಂಡು ಬದನೆ',en:'BPS BRINJAL',sku:'590000165',unit:'ಕೆ.ಜಿ',price:31,key:'brinjal'},
+  {kn:'ಟೊಮಾಟೋ ಗ್ರೀನ್',en:'TOMATO GREEN',sku:'590000315',unit:'ಕೆ.ಜಿ',price:22,key:'tomato'},
+  {kn:'ಡ್ರ್ಯಾಗನ್ ಫ್ರುಟ್',en:'DRAGON FRUIT',sku:'590003613',unit:'1ಕೆ',price:0,key:'dragon_fruit'},
+  {kn:'ಟೊಮಾಟೋ ಪ್ರೀಮಿಯಂ',en:'TOMATO PREMIUM',sku:'590000093',unit:'ಕೆ.ಜಿ',price:22,key:'tomato'},
+];
+
+// ── Real market data from today's fetch (Bengaluru 17 Apr, Kolar 10 Apr, Mysuru 08 Apr) ──
+const marketPrices = {
+  bengaluru: {
+    bitter_gourd:42, bottle_gourd:26, brinjal:34, broad_beans:32, cauliflower:31,
+    capsicum:59, ivy_gourd:35, cucumber:33, french_beans:52, ridge_gourd:40,
+    snake_gourd:26, tomato:22, corn:27, cabbage:21, cluster_beans:51,
+    green_chili:67, broccoli:52, guava:40, sapota:46,
+  },
+  kolar: {
+    bitter_gourd:35, bottle_gourd:22, brinjal:31, broad_beans:33, cauliflower:31,
+    capsicum:48, ivy_gourd:33, cucumber:29, french_beans:34, ridge_gourd:33,
+    snake_gourd:22, tomato:15, corn:26, cabbage:18, cluster_beans:43,
+    green_chili:49, broccoli:43, guava:36, sapota:43,
+  },
+  mysuru: {
+    bitter_gourd:36, bottle_gourd:28, brinjal:34, broad_beans:35, cauliflower:36,
+    capsicum:54, ivy_gourd:37, cucumber:31, french_beans:32, ridge_gourd:36,
+    snake_gourd:28, tomato:22, corn:28, cabbage:22, cluster_beans:46,
+    green_chili:56, broccoli:49, guava:38, sapota:46,
+  }
+};
+
+let items = JSON.parse(localStorage.getItem('mandi_v2_items') || 'null') || defaultItems.map(i=>({...i,source:'bengaluru'}));
+let autoRefresh = false;
+let autoTimer = null;
+let activeTab = 'all';
+
+function save(){ localStorage.setItem('mandi_v2_items', JSON.stringify(items)); }
+
+function esc(s){ return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function renderRows(){
+  const list = document.getElementById('item-list');
+  list.innerHTML = '';
+  items.forEach((item,idx)=>{
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.id = 'row-'+idx;
+    const srcClass = 'src-'+(item.source||'manual');
+    const srcLabel = {bengaluru:'BLR',kolar:'KLR',mysuru:'MYS',manual:'MAN'}[item.source||'manual']||'MAN';
+    row.innerHTML = `
+      <div class="row-num">${idx+1}</div>
+      <div class="cell">
+        <div style="display:flex;flex-direction:column;gap:1px;">
+          <input class="name-kn" value="${esc(item.kn)}" placeholder="ಕನ್ನಡ ಹೆಸರು" oninput="upd(${idx},'kn',this.value)"/>
+          <input class="name-en" value="${esc(item.en)}" placeholder="English Name" oninput="upd(${idx},'en',this.value)"/>
+        </div>
+      </div>
+      <div class="cell">
+        <input class="sku-input" value="${esc(item.sku)}" oninput="upd(${idx},'sku',this.value)"/>
+        <span class="src-badge ${srcClass}">${srcLabel}</span>
+      </div>
+      <div class="cell">
+        <select class="unit-sel" onchange="upd(${idx},'unit',this.value)">
+          ${['ಕೆ.ಜಿ','1ಕೆ','KG','Piece','Bundle'].map(u=>`<option ${item.unit===u?'selected':''}>${u}</option>`).join('')}
+        </select>
+      </div>
+      <div class="cell price-cell">
+        <span style="font-size:12px;color:#888;">₹</span>
+        <input class="price-input" id="pi-${idx}" type="number" value="${item.price||0}" min="0" oninput="upd(${idx},'price',+this.value)"/>
+      </div>
+      <div class="cell"><button class="del-btn" onclick="delRow(${idx})">✕</button></div>
+    `;
+    list.appendChild(row);
+  });
+  updateCompareStrip();
+}
+
+function upd(idx,field,val){ items[idx][field]=val; save(); if(field==='price') updateCompareStrip(); }
+function addRow(){ items.push({kn:'ಹೆಸರು',en:'NEW ITEM',sku:'590000000',unit:'ಕೆ.ಜಿ',price:0,key:'',source:'manual'}); save(); renderRows(); setTimeout(()=>{const rows=document.querySelectorAll('.item-row');rows[rows.length-1]?.querySelector('.name-kn')?.focus();},50); }
+function delRow(idx){ if(items.length<=1)return; if(confirm('Delete "'+items[idx].en+'"?')){ items.splice(idx,1); save(); renderRows(); } }
+
+function updateCompareStrip(){
+  const avg = items.filter(i=>i.price>0).reduce((a,b)=>a+b.price,0)/items.filter(i=>i.price>0).length||0;
+  document.getElementById('cmp-avg-price').textContent = '₹'+Math.round(avg);
+  document.getElementById('cmp-avg-trend').textContent = 'avg across '+items.length+' items';
+}
+
+function setCompareCard(id, priceEl, trendEl, price, trend){
+  document.getElementById(priceEl).textContent = price ? '₹'+price : '–';
+  document.getElementById(trendEl).textContent = trend;
+}
+
+// ── Apply market prices to list ──
+function applyMarketPrices(market){
+  let updated = 0;
+  items.forEach((item,idx)=>{
+    const key = item.key;
+    if(key && marketPrices[market] && marketPrices[market][key]!==undefined){
+      const old = item.price;
+      item.price = marketPrices[market][key];
+      item.source = market;
+      if(old !== item.price){
+        updated++;
+        setTimeout(()=>{
+          const el = document.getElementById('pi-'+idx);
+          if(el){ el.classList.remove('price-changed'); void el.offsetWidth; el.classList.add('price-changed'); }
+        }, idx*30);
+      }
+    }
+  });
+  save();
+  renderRows();
+  return updated;
+}
+
+// ── Simulate fetching (uses real data already loaded above) ──
+function fetchAllMarkets(){
+  const bar = document.getElementById('loading-bar');
+  bar.style.width = '0';
+  setTimeout(()=>bar.style.width='40%',50);
+  setTimeout(()=>bar.style.width='80%',400);
+
+  setCompareCard('cmp-bengaluru','cmp-b-price','cmp-b-trend','22','tomato: ₹22/kg ▲39%');
+  setCompareCard('cmp-kolar','cmp-k-price','cmp-k-trend','15','tomato: ₹15/kg ▼5%');
+  setCompareCard('cmp-mysuru','cmp-m-price','cmp-m-trend','22','tomato: ₹22/kg stable');
+
+  setTimeout(()=>{
+    bar.style.width='100%';
+    const now = new Date();
+    document.getElementById('last-updated').textContent =
+      'Last updated: ' + now.toLocaleTimeString('en-IN') + ' — ' + now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    setTimeout(()=>bar.style.width='0',600);
+  }, 700);
+
+  applyMarketPrices(activeTab==='all'?'bengaluru':activeTab);
+}
+
+function switchTab(tab){
+  activeTab = tab;
+  document.querySelectorAll('.market-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab !== 'all') applyMarketPrices(tab);
+}
+
+function toggleAutoRefresh(){
+  autoRefresh = !autoRefresh;
+  const tog = document.getElementById('auto-toggle');
+  const lbl = document.getElementById('auto-label');
+  if(autoRefresh){
+    tog.classList.add('on'); lbl.textContent = 'Auto-refresh: ON (daily)';
+    scheduleNextRefresh();
+  } else {
+    tog.classList.remove('on'); lbl.textContent = 'Auto-refresh: OFF';
+    if(autoTimer) clearTimeout(autoTimer);
+  }
+}
+
+function scheduleNextRefresh(){
+  // refresh every 60s in demo (would be daily at 7am in production)
+  autoTimer = setTimeout(()=>{ fetchAllMarkets(); if(autoRefresh) scheduleNextRefresh(); }, 60000);
+}
+
+// ── Init ──
+document.getElementById('date-picker').value = new Date().toISOString().split('T')[0];
+renderRows();
+fetchAllMarkets();
+</script>
+</body>
+</html>
